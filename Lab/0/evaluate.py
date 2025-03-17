@@ -55,7 +55,7 @@ experiments = [
 # 对于 m x k 和 k x n 的矩阵相乘，运算次数为 2*m*n*k
 flops = 2 * m * n * k
 
-device_peak_gflops = 8294.4
+device_peak_gflops = 843.8
 
 def run_command(cmd):
     """
