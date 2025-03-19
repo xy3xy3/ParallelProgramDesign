@@ -91,12 +91,14 @@ int main(int argc, char *argv[]) {
     finish = MPI_Wtime();
     double local_time = finish - start;
     double max_time;
+    // 使用MPI_Reduce收集每个进程的计算时间，并找出最大值
     MPI_Reduce(&local_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
     // 进程0 收集所有计算结果
     if (rank == 0) {
         C = (double*)malloc(m * k * sizeof(double));
     }
+    // 使用MPI_Gatherv收集每个进程的计算结果，用于合并结果
     MPI_Gatherv(local_C, local_rows * k, MPI_DOUBLE, C, send_counts, displs, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // 进程0 输出结果
