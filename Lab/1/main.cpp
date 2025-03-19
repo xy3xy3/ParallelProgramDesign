@@ -65,15 +65,20 @@ int main(int argc, char *argv[]) {
             A[i] = (double)(rand() % 10);
         }
     }
+    // 定义发送计数和偏移数组
     int send_counts[size], displs[size];
+    // 计算每个进程的数据量和偏移量
     for (int i = 0; i < size; i++) {
+        // send_counts[i]存储第i个进程需要接收的数据量(行数*列数)
         send_counts[i] = ((i < remainder) ? (rows_per_proc + 1) : rows_per_proc) * n;
+        // displs[i]存储第i个进程数据的起始偏移量
         displs[i] = (i == 0) ? 0 : displs[i - 1] + send_counts[i - 1];
     }
+    // 使用MPI_Scatterv分发矩阵A
     MPI_Scatterv(A, send_counts, displs, MPI_DOUBLE, local_A, local_rows * n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // 计算局部矩阵乘法
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD); // 同步所有进程,确保所有进程在开始计算前都已准备好
     start = MPI_Wtime();
     for (int i = 0; i < local_rows; i++) {
         for (int j = 0; j < k; j++) {
