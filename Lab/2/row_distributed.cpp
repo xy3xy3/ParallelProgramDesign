@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
     if (rank == 0) {
         printf("\n矩阵乘法计算耗时：%f 秒\n", max_time);
 
-        // 可选：打印小矩阵结果
+        // 打印小矩阵结果
         if (dims.m <= 10 && dims.n <= 10 && dims.k <= 10) {
             print_matrix(A, dims.m, dims.n, "矩阵A");
             print_matrix(B, dims.n, dims.k, "矩阵B");
