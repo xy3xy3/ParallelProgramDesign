@@ -1,24 +1,24 @@
 import subprocess
 import re
-import os
 
-# 要测试的程序及可执行文件名
+# 定义需要测试的程序及可执行文件名
 implementations = {
-    "行划分": {
-        "source": "row_pthread.cpp",
-        "binary": "row_exec",
+    "Mutex聚合": {
+        "source": "sum_pthread_mutex.cpp",
+        "binary": "sum_mutex_exec",
         "thread_counts": [1, 2, 4, 8, 16],
-        "matrix_sizes": [128, 256, 512, 1024, 2048]
+        "array_sizes": [1000000, 4000000, 8000000, 16000000, 32000000, 64000000, 128000000]
     },
-    "块划分": {
-        "source": "block_pthread.cpp",
-        "binary": "block_exec",
+    "局部聚合": {
+        "source": "sum_pthread_local.cpp",
+        "binary": "sum_local_exec",
         "thread_counts": [1, 2, 4, 8, 16],
-        "matrix_sizes": [128, 256, 512, 1024, 2048]
+        "array_sizes": [1000000, 4000000, 8000000, 16000000, 32000000, 64000000, 128000000]
     }
 }
 
-pattern = re.compile(r"矩阵乘法计算耗时：([\d\.]+) 秒")
+# 匹配输出中的耗时信息
+pattern = re.compile(r"计算耗时：([\d\.]+) 秒")
 
 def get_error_details(output, error):
     error_details = []
@@ -30,9 +30,9 @@ def get_error_details(output, error):
         error_details.append(output)
     return "\n".join(error_details)
 
-# 执行每个版本的测试
+# 针对每种实现进行测试
 for label, config in implementations.items():
-    print(f"\n正在编译 {label}...")
+    print(f"\n正在编译 {label} 版本...")
     compile_command = f"g++ -pthread {config['source']} -o {config['binary']} -O2"
     try:
         subprocess.run(compile_command, shell=True, check=True, capture_output=True)
@@ -43,11 +43,11 @@ for label, config in implementations.items():
     results = {}
 
     for t in config['thread_counts']:
-        for size in config['matrix_sizes']:
-            # 输入格式：线程数 m n k
-            input_str = f"{t} {size} {size} {size}\n"
+        for size in config['array_sizes']:
+            # 输入格式：线程数 n
+            input_str = f"{t} {size}\n"
             command = f"./{config['binary']}"
-            print(f"\n运行 {label}：线程数 = {t}, 矩阵规模 = {size} x {size}")
+            print(f"\n运行 {label}：线程数 = {t}, 数组长度 = {size}")
             try:
                 result = subprocess.run(
                     command,
@@ -75,12 +75,12 @@ for label, config in implementations.items():
 
     # 打印结果表格
     print(f"\n{label} - 测试结果表格（单位：秒）\n")
-    header = "|线程数|" + "|".join(str(s) for s in config['matrix_sizes']) + "|"
-    separator = "|" + " :-: |" * (len(config['matrix_sizes']) + 1)
+    header = "|线程数|" + "|".join(str(size) for size in config['array_sizes']) + "|"
+    separator = "|" + " :-: |" * (len(config['array_sizes']) + 1)
     print(header)
     print(separator)
     for t in config['thread_counts']:
         row = f"|{t}|"
-        for size in config['matrix_sizes']:
+        for size in config['array_sizes']:
             row += f"{results[(t, size)]}|"
         print(row)
